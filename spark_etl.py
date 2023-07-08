@@ -10,7 +10,11 @@ import pyspark.sql.types as T
 
 from pyspark.sql.functions import udf, col, desc, substring
 
+config = configparser.ConfigParser()
+config.read('dl.cfg')
 
+os.environ['AWS_ACCESS_KEY_ID']=config['AWS']['AWS_ACCESS_KEY_ID']
+os.environ['AWS_SECRET_ACCESS_KEY']=config['AWS']['AWS_SECRET_ACCESS_KEY']
 
 def create_spark_session():
     """
@@ -114,8 +118,14 @@ def process_demographics_data(spark, input_data, output_data):
 
 def main():
     spark = create_spark_session()
+    
+    input_data = config.get('IO', 'INPUT_DATA')
+    output_data = config.get('IO', 'OUTPUT_DATA')
+    
+    #input_data = "s3a://udacity-dend/"
+    #output_data = "./Results/"
 
-    input_data, output_data = '', ''  
+    #input_data, output_data = './input_data/', './output_data/'  
     
     process_immigration_data(spark, input_data, output_data)    
     process_demographics_data(spark, input_data, output_data)
