@@ -34,7 +34,7 @@ def process_immigration_data(spark, input_data, output_data):
         Outputs the fact immigration table
     """
     # get filepath to immigration data file
-    path = input_data + "sas_data" # sas_data for local mode
+    path = input_data + "immigration_data_sample.csv" # sas_data for local mode
     
     # read data file
     df=spark.read.parquet(path)
@@ -83,13 +83,39 @@ def process_immigration_data(spark, input_data, output_data):
     .mode('overwrite')\
     .parquet(os.path.join(output_data, 'immigration'))
     
+def process_demographics_data(spark, input_data, output_data):
+    """
+    Args:
+        spark: spark session
+        input_data: Path to input data
+        output_data: Path to output data
+    Returns:
+        Outputs the demographics table
+    """  
+    # get filepath to immigration data file
+    path = input_data + "us-cities-demographics.csv" 
     
+    # read data file
+    df = spark.read.csv(path, inferSchema=True, header=True, sep=';') 
+    
+    # Rename Columns
+    df = df.withColumnRenamed('Median Age', 'median_age') \
+        .withColumnRenamed('Male Population', 'male_population') \
+        .withColumnRenamed('Female Population', 'female_population') \
+        .withColumnRenamed('Total Population', 'total_population') \
+        .withColumnRenamed('Number of Veterans', 'n_veterans') \
+        .withColumnRenamed('Foreign-born', 'foreign_born') \
+        .withColumnRenamed('Average Household Size', 'avg_household_size') \
+        .withColumnRenamed('State Code', 'state_code')
+    
+    
+    df.write.parquet(output_data + "demographics", mode="overwrite")    
 
 
 def main():
     spark = create_spark_session()
 
-    input_data, output_data = '../../data/18-83510-I94-Data-2016/i94_apr16_sub.sas7bdat', 'sas_data'  
+    input_data, output_data = '', ''  
     
     process_immigration_data(spark, input_data, output_data)    
     process_demographics_data(spark, input_data, output_data)
